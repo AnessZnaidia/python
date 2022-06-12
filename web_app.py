@@ -42,13 +42,13 @@ df['total_deaths'] = 10
 #fig2 = px.line(df, x='jour', y='nb')
 #ts_chart = st.plotly_chart(fig2)
 
-df2 = pd.read_csv('https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20220610-190115/covid-hospit-2022-06-10-19h01.csv', sep = ';')
+df2 = pd.read_csv('https://static.data.gouv.fr/resources/donnees-des-urgences-hospitalieres-et-de-sos-medecins-relatives-a-lepidemie-de-covid-19/20220610-190111/sursaud-covid-quot-reg-2022-06-10-19h01.csv', sep = ';')
 
 #df2
 
-df2['jour'] = pd.to_datetime(df2['jour'])
-df2['jour_semaine'] = df2['jour'].dt.day_name()
-df2['Mois'] = pd.DatetimeIndex(df2['jour']).month
+df2['date_de_passage'] = pd.to_datetime(df2['date_de_passage'])
+df2['jour_semaine'] = df2['date_de_passage'].dt.day_name()
+df2['Mois'] = pd.DatetimeIndex(df2['date_de_passage']).month
 df2['Mois'] = df2['Mois'].replace([1],'Janvier')
 df2['Mois'] = df2['Mois'].replace([2],'Février')
 df2['Mois'] = df2['Mois'].replace([3],'Mars')
@@ -164,7 +164,7 @@ df3.drop(indexNames , inplace=True)
 
 df3['Année'] = pd.DatetimeIndex(df3['jour']).year
 df4['Année'] = pd.DatetimeIndex(df4['jour']).year
-df2['Année'] = pd.DatetimeIndex(df2['jour']).year
+df2['Année'] = pd.DatetimeIndex(df2['date_de_passage']).year
 
 
 
@@ -199,17 +199,15 @@ with c1 :
 
    fig4 = go.Figure()
 
-   area_one = go.Scatter(name = 'Nombre de personnes hospitalisées', x=donnee_choisies3['Mois'], y=donnee_choisies3['hosp'], stackgroup = 'one')
-   area_two = go.Scatter(name = 'Nombre de personnes en réanimation',x=donnee_choisies3['Mois'],y=donnee_choisies3['rea'],stackgroup = 'one')
-   #area_three = go.Scatter(name = 'Nombre de personnes décédées',x=donnee_choisies3['Mois'],y=donnee_choisies3['dc'],stackgroup = 'one')
+   area_one = go.Scatter(name = "Homme", x=donnee_choisies3['Mois'], y=donnee_choisies3['nbre_hospit_corona_h'], stackgroup = 'one')
+   area_two = go.Scatter(name = 'Femme',x=donnee_choisies3['Mois'],y=donnee_choisies3['nbre_hospit_corona_f'],stackgroup = 'one')
 
 
    fig4.add_trace(area_one)
    fig4.add_trace(area_two)
-   #fig4.add_trace(area_three)
 
 
-   fig4.update_layout(xaxis_type = 'category', title_text='Evolution du nombre de personnes hospitalisées et en réanimation selon le mois')
+   fig4.update_layout(xaxis_type = 'category', title_text="Evolution des personnes hospitalisées pour le COVID 19 le selon le mois")
 
    fig4.update_xaxes(categoryorder = 'array', categoryarray= ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 
    'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'], title = 'Mois')
@@ -240,14 +238,14 @@ with c2:
    if choix_annee == 2021:
 
       fig5 = px.line(donnee_choisies3, x=['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 
-      'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'], y='dc',markers=True, title = 'Evolution du nombre de personnes décédées selon le mois', labels=
-      {'x':'Mois', 'dc':'Nombre de personnes'})
+      'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'], y='nbre_pass_corona',markers=True, title = 'Evolution du nombre de passages aux urgences pour le COVID 19 selon le mois', labels=
+      {'x':'Mois', 'nbre_pass_corona':'Nombre de personnes'})
 
       line_chart = st.plotly_chart(fig5)
    else:
 
-      fig5 = px.line(donnee_choisies3, x=['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'], y='dc',markers=True, title = 'Evolution du nombre de personnes décédées selon le mois', labels=
-      {'x':'Mois', 'dc':'Nombre de personnes'})
+      fig5 = px.line(donnee_choisies3, x=['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'], y='nbre_pass_corona',markers=True, title = 'Evolution du nombre de passages aux urgences pour le COVID 19 selon le mois', labels=
+      {'x':'Mois', 'nbre_pass_corona':'Nombre de personnes'})
 
       line_chart = st.plotly_chart(fig5)
 
