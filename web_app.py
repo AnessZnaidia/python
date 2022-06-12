@@ -6,12 +6,11 @@ import plotly_express as px
 import plotly.graph_objects as go
 #import mymodel as m 
 
-# Use the full page instead of a narrow central column
-st.set_page_config(layout="wide")
+st.set_page_config(page_title = 'Web App sur le COVID 19', layout="wide")
 
 #début de la création du dashboard avec le titre notamment
 
-st.title("Bienvenue sur le dashboard intéractif à propos des données hospitalières liées à la pandémie du Covid 19 en France")
+st.title("Bienvenue sur le Dashboard Intéractif des Données liées à la Pandémie du Covid 19 en France")
 #st.write("""
 # COVID-19 Dashboard
 #Below you will find our dashbord that is updated every day.
@@ -49,9 +48,27 @@ df2 = pd.read_csv('https://static.data.gouv.fr/resources/donnees-hospitalieres-r
 
 df2['jour'] = pd.to_datetime(df2['jour'])
 df2['jour_semaine'] = df2['jour'].dt.day_name()
+df2['Mois'] = pd.DatetimeIndex(df2['jour']).month
+df2['Mois'] = df2['Mois'].replace([1],'Janvier')
+df2['Mois'] = df2['Mois'].replace([2],'Février')
+df2['Mois'] = df2['Mois'].replace([3],'Mars')
+df2['Mois'] = df2['Mois'].replace([4],'Avril')
+df2['Mois'] = df2['Mois'].replace([5],'Mai')
+df2['Mois'] = df2['Mois'].replace([6],'Juin')
+df2['Mois'] = df2['Mois'].replace([7],'Juillet')
+df2['Mois'] = df2['Mois'].replace([8],'Août')
+df2['Mois'] = df2['Mois'].replace([9],'Septembre')
+df2['Mois'] = df2['Mois'].replace([10],'Octobre')
+df2['Mois'] = df2['Mois'].replace([11],'Novembre')
+df2['Mois'] = df2['Mois'].replace([12],'Décembre')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Monday','Lundi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Tuesday','Mardi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Wednesday','Mercredi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Thursday','Jeudi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Friday','Vendredi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Saturday','Samedi')
+df2['jour_semaine'] = df2['jour_semaine'].replace('Sunday','Dimanche')
 
-#fig2 = px.line(df2, x='jour', y='hosp')
-#ts_chart = st.plotly_chart(fig2)
 
 
 #fig3 = px.bar(df2, x='jour_semaine', y='hosp')
@@ -147,6 +164,8 @@ df3.drop(indexNames , inplace=True)
 
 df3['Année'] = pd.DatetimeIndex(df3['jour']).year
 df4['Année'] = pd.DatetimeIndex(df4['jour']).year
+df2['Année'] = pd.DatetimeIndex(df2['jour']).year
+
 
 
 #renommer les noms des colonnes qui nous intéréssent
@@ -154,7 +173,8 @@ df4['Année'] = pd.DatetimeIndex(df4['jour']).year
 df3.rename(columns={'reg': 'Région', 
                     'clage_vacsi': 'Tranche Age',
                     'n_complet_h' : 'Homme',
-                    'n_complet_f' : 'Femme'},inplace=True)
+                    'n_complet_f' : 'Femme', 
+                     'n_dose1_h': 'Nombre de vaccins'},inplace=True)
 
 #création des sliders pour filtrer les données selon l'utilisateur
 
@@ -168,25 +188,71 @@ choix_region = st.sidebar.selectbox(
    df3['Région'].unique()
 )
 
-# Space out the maps so the first one is 2x the size of the other three
 c1, c2 = st.columns((2.5,2.5))
 
-#filtration des données pour la création du pie chart
 with c1 :
+   donnee_choisies3 = df2[df2['Année'] == choix_annee]
+
+   donnee_choisies3 = donnee_choisies3.groupby('Mois').sum()
+
+   donnee_choisies3 = donnee_choisies3.reset_index()
+
+   fig4 = go.Figure()
+
+   area_one = go.Scatter(name = 'Nombre de personnes hospitalisées', x=donnee_choisies3['Mois'], y=donnee_choisies3['hosp'], stackgroup = 'one')
+   area_two = go.Scatter(name = 'Nombre de personnes en réanimation',x=donnee_choisies3['Mois'],y=donnee_choisies3['rea'],stackgroup = 'one')
+   #area_three = go.Scatter(name = 'Nombre de personnes décédées',x=donnee_choisies3['Mois'],y=donnee_choisies3['dc'],stackgroup = 'one')
+
+
+   fig4.add_trace(area_one)
+   fig4.add_trace(area_two)
+   #fig4.add_trace(area_three)
+
+
+   fig4.update_layout(xaxis_type = 'category', title_text='Evolution du nombre de personnes hospitalisées et en réanimation selon le mois')
+
+   fig4.update_xaxes(categoryorder = 'array', categoryarray= ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 
+   'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'], title = 'Mois')
+
+   fig4.update_yaxes(title = 'Nombre de personnes')
+
+   ts_chart = st.plotly_chart(fig4)
+
+
+
+   #filtration des données pour la création du pie chart
    donnee_choisies = df3[(df3['Région'] == choix_region) & (df3['Année'] == choix_annee)]
 
-   fig = px.pie(donnee_choisies, values='n_dose1_h', names='Tranche Age', title="Pie Chart du Nombre de Vaccins par Tranche d'Age")
+   fig = px.pie(donnee_choisies, values='Nombre de vaccins', names='Tranche Age', 
+   title="Pie Chart du Nombre de Vaccins par Tranche d'Age")
    pie_chart = st.plotly_chart(fig)
 
    donnee_choisies2 = df4[(df4['reg'] == choix_region) & (df4['Année'] == choix_annee)]
 
    fig3 = px.bar(donnee_choisies2, x='vaccin', y='n_tot_dose3', title="Nombre de Dose pour Chacun des Différents Type de Vaccin (2022)")
-   barplot_chart = st.plotly_chart(fig3)
+   bar_chart = st.plotly_chart(fig3)
 
 
 
-#filtration des données pour la création du donut chart
+
 with c2:
+
+   if choix_annee == 2021:
+
+      fig5 = px.line(donnee_choisies3, x=['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 
+      'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'], y='dc',markers=True, title = 'Evolution du nombre de personnes décédées selon le mois', labels=
+      {'x':'Mois', 'dc':'Nombre de personnes'})
+
+      line_chart = st.plotly_chart(fig5)
+   else:
+
+      fig5 = px.line(donnee_choisies3, x=['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'], y='dc',markers=True, title = 'Evolution du nombre de personnes décédées selon le mois', labels=
+      {'x':'Mois', 'dc':'Nombre de personnes'})
+
+      line_chart = st.plotly_chart(fig5)
+
+
+   #filtration des données pour la création du donut chart
    labels = ['Homme', 'Femme']
    values = [donnee_choisies['Homme'].sum(), donnee_choisies['Femme'].sum()]
 
